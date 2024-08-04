@@ -17,3 +17,13 @@ class User(BaseModel):
     last_name: str
     created_at: str
     updated_at: str
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    user: User

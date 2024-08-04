@@ -1,17 +1,28 @@
-# uuid
 import uuid
+from datetime import datetime, timedelta, timezone
 
-# argon
-from argon2 import PasswordHasher
+# jwt
+import jwt
 
 # psycopg2
 from psycopg2.errors import UniqueViolation
 
+# config
+from app.config import JWT_SECRET_KEY
+
 # db
 from app.db import get_connection, release_connection
 
+# helpers
+from app.users.helpers import (
+    handle_unique_violation,
+    hash_password,
+    insert_user,
+    verify_password,
+)
+
 # schemas
-from app.users.schemas import User
+from app.users.schemas import LoginResponse, User
 
 
 def create_user(
@@ -23,10 +34,10 @@ def create_user(
 ):
     conn = get_connection()
     try:
-        password_hash = _hash_password(password)
+        password_hash = hash_password(password)
         user_id = str(uuid.uuid4())
 
-        _insert_user(
+        insert_user(
             conn,
             user_id,
             email,
@@ -38,57 +49,9 @@ def create_user(
 
         return user_id
     except UniqueViolation as e:
-        _handle_unique_violation(e)
+        handle_unique_violation(e)
     finally:
         release_connection(conn)
-
-
-def _hash_password(password: str) -> str:
-    hasher = PasswordHasher()
-    return hasher.hash(password)
-
-
-def _insert_user(
-    conn,
-    user_id: str,
-    email: str,
-    username: str,
-    password_hash: str,
-    first_name: str,
-    last_name: str,
-) -> None:
-    with conn.cursor() as cur:
-        try:
-            cur.execute(
-                """
-                INSERT INTO users
-                (id, email, username, password, first_name, last_name)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    user_id,
-                    email,
-                    username,
-                    password_hash,
-                    first_name,
-                    last_name,
-                ),
-            )
-            conn.commit()
-        except UniqueViolation as e:
-            conn.rollback()
-            raise e
-
-
-def _handle_unique_violation(error: UniqueViolation) -> None:
-    if "email" in str(error):
-        raise ValueError({"email": ["Email already exists"]})
-    elif "username" in str(error):
-        raise ValueError({"username": ["Username already exists"]})
-    else:
-        raise ValueError(
-            {"non_field_errors": ["Something went wrong. Please try again later"]}
-        )
 
 
 def get_user_by_id(user_id: str) -> User:
@@ -117,3 +80,59 @@ def get_user_by_id(user_id: str) -> User:
         release_connection(conn)
 
     return user
+
+
+def authenticate(
+    email: str,
+    password: str,
+):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, password
+                FROM users
+                WHERE email = %s
+                """,
+                (email,),
+            )
+            user = cur.fetchone()
+            if not user or not verify_password(password, user[1]):
+                raise ValueError(
+                    {
+                        "non_field_errors": [
+                            "Invalid email or password",
+                        ]
+                    }
+                )
+
+        user = get_user_by_id(user[0])
+
+        token_expiration = int(
+            (datetime.now(timezone.utc) + timedelta(days=1)).timestamp()
+        )
+
+        token = jwt.encode(
+            {**user.model_dump(), "exp": token_expiration},
+            JWT_SECRET_KEY,
+            algorithm="HS256",
+            headers={"exp": token_expiration},
+        )
+
+        return LoginResponse(token=token, user=user)
+
+    except ValueError as e:
+        raise e
+
+    except Exception as e:
+        print(e)
+        raise ValueError(
+            {
+                "non_field_errors": [
+                    "Something went wrong. Please try again later",
+                ]
+            }
+        )
+    finally:
+        release_connection(conn)
