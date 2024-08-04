@@ -1,2 +1,4 @@
 fastapi==0.112.0
 uvicorn==0.30.5
+psycopg2==2.9.9
+python-dotenv==1.0.1
