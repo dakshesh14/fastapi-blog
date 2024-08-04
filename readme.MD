@@ -9,3 +9,38 @@ With this project I aim to implement the following features:
 - [ ] Comment CRUD operations
 - [ ] Various middleware operations
 - [ ] Unit tests (probably)
+
+## Installation
+
+1. Clone the repository
+2. Install the dependencies
+
+```bash
+pip install -r requirements/local.txt
+```
+
+3. Create database
+
+```bash
+createdb fastapi_blogs_db
+```
+
+4. Set the environment variables
+
+```bash
+export DATABASE_URL=postgresql://postgres:password@localhost/fastapi_blogs_db
+```
+
+5. Run the application
+
+```bash
+uvicorn app.main:app --reload
+```
+
+## Database
+
+### To create tables
+
+```bash
+psql -U postgres -h localhost -d fastapi_blogs_db -f app/sql/<table_name>.sql
+```

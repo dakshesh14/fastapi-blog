@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2 import pool  # NOQA: F401
 
 from app.config import DATABASE_URL
 
