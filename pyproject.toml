@@ -4,3 +4,12 @@ version = "0.1.0"
 description = "A FastAPI blog application which aims to cover core concepts of building an API application."
 authors = ["Dakshesh Jain"]
 license = "GPL-3.0"
+
+[tool.black]
+line-length = 88
+target-version = ['py37', 'py38', 'py39', 'py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
