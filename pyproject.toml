@@ -1,0 +1,6 @@
+[tool.poetry]
+name = "fastapi_blog"
+version = "0.1.0"
+description = "A FastAPI blog application which aims to cover core concepts of building an API application."
+authors = ["Dakshesh Jain"]
+license = "GPL-3.0"
