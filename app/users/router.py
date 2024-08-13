@@ -1,18 +1,12 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import JSONResponse
 
-# schemas
+# local imports
+from app.core.auth import get_current_user
 from app.users.schemas import UserCreate, UserLogin
-
-# services
 from app.users.services import authenticate, create_user, get_user_by_id
 
 router = APIRouter()
-
-
-@router.get("/")
-def get_user():
-    return {"message": "This will be implemented soon 🚀"}
 
 
 @router.post("/")
@@ -46,3 +40,8 @@ def login(form_data: UserLogin):
             status_code=status.HTTP_400_BAD_REQUEST,
             content=e.args[0],
         )
+
+
+@router.get("/me")
+def get_me(request: Request, user=Depends(get_current_user)):
+    return user

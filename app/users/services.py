@@ -7,13 +7,8 @@ import jwt
 # psycopg2
 from psycopg2.errors import UniqueViolation
 
-# config
-from app.config import JWT_SECRET_KEY
-
-# db
+from app.config import JWT_ALGORITHM, JWT_SECRET_KEY
 from app.db import get_connection, release_connection
-
-# helpers
 from app.users.helpers import (
     handle_unique_violation,
     hash_password,
@@ -21,7 +16,7 @@ from app.users.helpers import (
     verify_password,
 )
 
-# schemas
+# local imports
 from app.users.schemas import LoginResponse, User
 
 
@@ -82,6 +77,24 @@ def get_user_by_id(user_id: str) -> User:
     return user
 
 
+def get_user_by_token(token: str) -> User:
+    token = token.replace("Bearer ", "")
+
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        user = get_user_by_id(payload.get("id"))
+        return user
+    except Exception as e:
+        print(e)
+        raise ValueError(
+            {
+                "non_field_errors": [
+                    "Could not validate credentials",
+                ]
+            }
+        )
+
+
 def authenticate(
     email: str,
     password: str,
@@ -116,7 +129,7 @@ def authenticate(
         token = jwt.encode(
             {**user.model_dump(), "exp": token_expiration},
             JWT_SECRET_KEY,
-            algorithm="HS256",
+            algorithm=JWT_ALGORITHM,
             headers={"exp": token_expiration},
         )
 
