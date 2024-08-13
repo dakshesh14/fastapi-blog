@@ -3,8 +3,8 @@ from fastapi.responses import JSONResponse
 
 # local imports
 from app.core.auth import get_current_user
-from app.users.schemas import UserCreate, UserLogin
-from app.users.services import authenticate, create_user, get_user_by_id
+from app.users.schemas import UserCreate, UserLogin, UserUpdate
+from app.users.services import authenticate, create_user, get_user_by_id, update_user
 
 router = APIRouter()
 
@@ -45,3 +45,8 @@ def login(form_data: UserLogin):
 @router.get("/me")
 def get_me(request: Request, user=Depends(get_current_user)):
     return user
+
+
+@router.patch("/me")
+def update_me(form_data: UserUpdate, user=Depends(get_current_user)):
+    return update_user(form_data, user)

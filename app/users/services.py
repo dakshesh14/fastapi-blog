@@ -7,6 +7,7 @@ import jwt
 # psycopg2
 from psycopg2.errors import UniqueViolation
 
+# local imports
 from app.config import JWT_ALGORITHM, JWT_SECRET_KEY
 from app.db import get_connection, release_connection
 from app.users.helpers import (
@@ -15,11 +16,10 @@ from app.users.helpers import (
     insert_user,
     verify_password,
 )
-
-# local imports
-from app.users.schemas import LoginResponse, User
+from app.users.schemas import LoginResponse, User, UserUpdate
 
 
+# TODO: make all the user related options a class or something
 def create_user(
     email: str,
     username: str,
@@ -93,6 +93,71 @@ def get_user_by_token(token: str) -> User:
                 ]
             }
         )
+
+
+def update_user(form_data: UserUpdate, user: User) -> LoginResponse:
+    email = form_data.email if form_data.email is not None else user.email
+    username = form_data.username if form_data.username is not None else user.username
+    first_name = (
+        form_data.first_name if form_data.first_name is not None else user.first_name
+    )
+    last_name = (
+        form_data.last_name if form_data.last_name is not None else user.last_name
+    )
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE users
+                SET email = %s,
+                    username = %s,
+                    first_name = %s,
+                    last_name = %s
+                WHERE id = %s
+                """,
+                (
+                    email,
+                    username,
+                    first_name,
+                    last_name,
+                    user.id,
+                ),
+            )
+            conn.commit()
+
+        user = get_user_by_id(user.id)
+
+        token_expiration = int(
+            (datetime.now(timezone.utc) + timedelta(days=1)).timestamp()
+        )
+
+        token = jwt.encode(
+            {**user.model_dump(), "exp": token_expiration},
+            JWT_SECRET_KEY,
+            algorithm=JWT_ALGORITHM,
+            headers={"exp": token_expiration},
+        )
+
+        return LoginResponse(token=token, user=user)
+    except ValueError as e:
+        print(e)
+        conn.rollback()
+        raise e
+
+    except Exception as e:
+        print(e)
+        conn.rollback()
+        raise ValueError(
+            {
+                "non_field_errors": [
+                    "Something went wrong. Please try again later",
+                ]
+            }
+        )
+    finally:
+        release_connection(conn)
 
 
 def authenticate(
