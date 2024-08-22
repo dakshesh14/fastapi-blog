@@ -11,14 +11,17 @@ class UserCreate(BaseModel):
     last_name: str
 
 
-class User(BaseModel):
+class UserPublic(BaseModel):
     id: str
-    email: EmailStr
     username: str
-    first_name: str
-    last_name: str
     created_at: str
     updated_at: str
+
+
+class User(UserPublic):
+    email: EmailStr
+    first_name: str
+    last_name: str
 
 
 class UserLogin(BaseModel):
