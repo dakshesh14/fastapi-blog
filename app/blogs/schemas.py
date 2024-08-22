@@ -20,6 +20,7 @@ class Blog(BaseModel):
     created_at: str
     updated_at: str
 
+    author_id: str
     author: UserPublic
 
 
