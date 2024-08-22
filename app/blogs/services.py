@@ -3,11 +3,11 @@ import uuid
 # psycopg2
 from psycopg2.errors import UniqueViolation
 
+from app.blogs.schemas import Blog, BlogCreate, BlogUpdate
+from app.core.string import random_string, slugify
 
 # local imports
 from app.db import get_connection, release_connection
-from app.core.string import slugify, random_string
-from app.blogs.schemas import BlogCreate, BlogUpdate, Blog
 from app.users.services import get_user_by_id
 
 
