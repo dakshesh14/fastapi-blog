@@ -122,31 +122,28 @@ class BlogService:
                     """
                 )
                 blogs = cur.fetchall()
-                blog_list = []
 
-                for blog in blogs:
-                    blog_list.append(
-                        Blog(
-                            id=blog[0],
-                            title=blog[1],
-                            slug=blog[2],
-                            content=blog[3],
-                            created_at=blog[4],
-                            updated_at=blog[5],
-                            author_id=blog[6],
-                            author=UserPublic(
-                                id=blog[7],
-                                username=blog[8],
-                                created_at=blog[9],
-                                updated_at=blog[10],
-                            ),
-                        )
+                return [
+                    Blog(
+                        id=blog[0],
+                        title=blog[1],
+                        slug=blog[2],
+                        content=blog[3],
+                        created_at=blog[4],
+                        updated_at=blog[5],
+                        author_id=blog[6],
+                        author=UserPublic(
+                            id=blog[7],
+                            username=blog[8],
+                            created_at=blog[9],
+                            updated_at=blog[10],
+                        ),
                     )
+                    for blog in blogs
+                ]
 
         finally:
             release_connection(conn)
-
-        return blog_list
 
     @staticmethod
     async def update_blog(blog_id: str, blog_update: BlogUpdate) -> Blog:
@@ -156,6 +153,7 @@ class BlogService:
                 cur.execute(
                     """
                     UPDATE blogs
+                    SET
                         title = %s,
                         content = %s
                     WHERE
@@ -168,7 +166,7 @@ class BlogService:
                     ),
                 )
                 conn.commit()
-                return BlogService.get_blog(blog_id)
+                return await BlogService.get_blog(blog_id)
 
         finally:
             release_connection(conn)
@@ -180,7 +178,7 @@ class BlogService:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    DELETE blogs 
+                    DELETE FROM blogs 
                     WHERE 
                         blogs.id = %s
                     """,

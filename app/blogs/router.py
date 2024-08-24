@@ -16,7 +16,7 @@ async def get_blogs():
     Get all blogs.
     """
     blogs = await BlogService.get_blogs()
-    return JSONResponse(status_code=status.HTTP_200_OK, content=blogs)
+    return blogs
 
 
 @router.post("/")
@@ -37,10 +37,9 @@ async def create_blog_api(
 @router.get("/{blog_id}")
 async def get_blog(blog_id: str):
     blog = await BlogService.get_blog(blog_id)
-    return JSONResponse(status_code=status.HTTP_200_OK, content=blog)
+    return blog
 
 
-# TODO: add authorisation
 @router.patch("/{blog_id}")
 async def update_blog(
     blog_id: str,
@@ -49,10 +48,9 @@ async def update_blog(
     __=Depends(author_only),
 ):
     blog = await BlogService.update_blog(blog_id, form_data)
-    return JSONResponse(status_code=status.HTTP_200_OK, content=blog)
+    return blog
 
 
-# TODO: add authorisation
 @router.delete("/{blog_id}")
 async def delete_blog(
     blog_id: str,
