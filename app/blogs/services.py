@@ -33,7 +33,8 @@ class BlogService:
                         user_id,
                     ),
                 )
-            return BlogService.get_blog(blog_id)
+                conn.commit()
+            return await BlogService.get_blog(blog_id)
         except UniqueViolation as e:
             conn.rollback()
             raise e
@@ -52,11 +53,13 @@ class BlogService:
                         blogs.title,
                         blogs.slug,
                         blogs.content,
+                        blogs.created_at,
+                        blogs.updated_at,
                         blogs.author_id,
                         users.id,
                         users.username,
                         users.created_at,
-                        users.updated_at,
+                        users.updated_at
                     FROM 
                         blogs
                     JOIN
@@ -105,6 +108,8 @@ class BlogService:
                         blogs.title,
                         blogs.slug,
                         blogs.content,
+                        blogs.created_at,
+                        blogs.updated_at,
                         blogs.author_id,
                         users.id,
                         users.username,

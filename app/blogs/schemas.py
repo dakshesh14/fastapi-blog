@@ -1,4 +1,6 @@
+from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -12,15 +14,15 @@ class BlogCreate(BaseModel):
 
 
 class Blog(BaseModel):
-    id: str
+    id: UUID
     title: str
     slug: str
     content: str
 
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
-    author_id: str
+    author_id: UUID
     author: UserPublic
 
 
