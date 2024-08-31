@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS blogs CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- We should ideally use id as simple int and make a new column named pk or uuid since
+-- uuid can make indexing expensive but for now this should be fine
 CREATE TABLE blogs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(255),
@@ -9,7 +11,7 @@ CREATE TABLE blogs (
   content TEXT,
 
   -- author
-  author_id UUID REFERENCES users(id),
+  author_id UUID REFERENCES users(id) ON DELETE CASCADE,
 
   -- time audit fields
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -19,6 +21,7 @@ CREATE TABLE blogs (
   CONSTRAINT unique_slug UNIQUE (slug)
 );
 
+CREATE INDEX idx_blogs_created_at ON blogs(created_at);
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
