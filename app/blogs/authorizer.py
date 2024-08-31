@@ -10,7 +10,7 @@ async def author_only(
     blog_id: str,
     user: User = Depends(get_current_user),
 ):
-    blog = await BlogService.get_blog(blog_id)
+    blog = await BlogService.get_by_id(blog_id)
 
     if not blog:
         raise HTTPException(

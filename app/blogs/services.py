@@ -5,6 +5,7 @@ from psycopg2.errors import UniqueViolation
 
 # local imports
 from app.blogs.schemas import Blog, BlogCreate, BlogUpdate
+from app.core.exceptions import EntityNotFound
 from app.core.string import random_string, slugify
 from app.db import get_connection, release_connection
 from app.users.schemas import UserPublic
@@ -12,7 +13,7 @@ from app.users.schemas import UserPublic
 
 class BlogService:
     @staticmethod
-    async def create_blog(user_id: str, data: BlogCreate) -> Blog:
+    async def create(user_id: str, data: BlogCreate) -> Blog:
         conn = get_connection()
         try:
             blog_id = str(uuid.uuid4())
@@ -34,7 +35,7 @@ class BlogService:
                     ),
                 )
                 conn.commit()
-            return await BlogService.get_blog(blog_id)
+            return await BlogService.get_by_id(blog_id)
         except UniqueViolation as e:
             conn.rollback()
             raise e
@@ -42,13 +43,13 @@ class BlogService:
             release_connection(conn)
 
     @staticmethod
-    async def get_blog(blog_id: str) -> Blog:
+    async def get_by_id(blog_id: str) -> Blog:
         conn = get_connection()
         try:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT 
+                    SELECT
                         blogs.id,
                         blogs.title,
                         blogs.slug,
@@ -60,7 +61,7 @@ class BlogService:
                         users.username,
                         users.created_at,
                         users.updated_at
-                    FROM 
+                    FROM
                         blogs
                     JOIN
                         users ON blogs.author_id = users.id
@@ -71,8 +72,9 @@ class BlogService:
                 )
                 blog = cur.fetchone()
                 if blog is None:
-                    # TODO: raise custom exception for entity not found
-                    raise Exception("Blog not found")
+                    raise EntityNotFound(
+                        name="Blogs", message=f"No blog can be found with id: {blog_id}"
+                    )
 
                 return Blog(
                     id=blog[0],
@@ -103,7 +105,7 @@ class BlogService:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    SELECT 
+                    SELECT
                         blogs.id,
                         blogs.title,
                         blogs.slug,
@@ -115,7 +117,7 @@ class BlogService:
                         users.username,
                         users.created_at,
                         users.updated_at
-                    FROM 
+                    FROM
                         blogs
                     JOIN
                         users ON blogs.author_id = users.id
@@ -146,7 +148,7 @@ class BlogService:
             release_connection(conn)
 
     @staticmethod
-    async def update_blog(blog_id: str, blog_update: BlogUpdate) -> Blog:
+    async def update(blog_id: str, blog_update: BlogUpdate) -> Blog:
         conn = get_connection()
         try:
             with conn.cursor() as cur:
@@ -166,20 +168,20 @@ class BlogService:
                     ),
                 )
                 conn.commit()
-                return await BlogService.get_blog(blog_id)
+                return await BlogService.get_by_id(blog_id)
 
         finally:
             release_connection(conn)
 
     @staticmethod
-    async def delete_blog(blog_id: str) -> None:
+    async def delete(blog_id: str) -> None:
         conn = get_connection()
         try:
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    DELETE FROM blogs 
-                    WHERE 
+                    DELETE FROM blogs
+                    WHERE
                         blogs.id = %s
                     """,
                     (blog_id,),

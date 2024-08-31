@@ -3,7 +3,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
 # local imports
-from app.users.services import get_user_by_token
+from app.users.services import UserService
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -12,7 +12,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         if token:
             try:
-                user = get_user_by_token(token)
+                user = await UserService.get_by_token(token)
                 if user:
                     request.state.user = user
             except ValueError as e:

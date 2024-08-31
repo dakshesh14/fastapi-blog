@@ -2,7 +2,7 @@ from fastapi import HTTPException, Request
 
 # local imports
 from app.users.schemas import User
-from app.users.services import get_user_by_token
+from app.users.services import UserService
 
 
 async def get_current_user(request: Request) -> User:
@@ -18,10 +18,10 @@ async def get_current_user(request: Request) -> User:
         )
 
     try:
-        user = get_user_by_token(token)
+        user = await UserService.get_by_token(token)
         return user
     except ValueError as e:
-        raise HTTPException(status_code=401, detail=e.args[0])
+        raise HTTPException(status_code=401, detail=e.args[0]) from e
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
