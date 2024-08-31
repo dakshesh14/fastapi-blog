@@ -1,5 +1,5 @@
-from contextlib import contextmanager
-from typing import Any, Generator
+from contextlib import contextmanager  # NOQA: F401
+from typing import Any, Generator  # NOQA: F401
 
 import psycopg2
 from psycopg2 import pool  # NOQA: F401

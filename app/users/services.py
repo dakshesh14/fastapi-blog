@@ -41,13 +41,13 @@ class UserService:
                     ),
                 )
                 conn.commit()
-
-            return await UserService.get_by_id(user_id)
         except UniqueViolation as e:
             conn.rollback()
             handle_unique_violation(e)
         finally:
             release_connection(conn)
+
+        return await UserService.get_by_id(user_id)
 
     @staticmethod
     async def get_by_id(user_id: str) -> User:
