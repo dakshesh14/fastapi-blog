@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 # local imports
 from app.blogs import router as blog_router
+from app.comments import router as comment_router
 from app.config import DEBUG
 from app.core.exceptions import (
     APIError,
@@ -24,6 +25,7 @@ app.add_middleware(AuthMiddleware)
 
 app.include_router(user_router.router, prefix="/api/users", tags=["users"])
 app.include_router(blog_router.router, prefix="/api/blogs", tags=["blogs"])
+app.include_router(comment_router.router, prefix="/api/comments", tags=["comments"])
 
 
 def create_exception_handler(
