@@ -25,6 +25,13 @@ class Blog(BaseModel):
     author: UserPublic
 
 
+class PaginatedBlogsResponse(BaseModel):
+    results: list[Blog]
+    count: int
+    next: Optional[str]
+    previous: Optional[str]
+
+
 class BlogUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None

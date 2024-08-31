@@ -12,11 +12,11 @@ router = APIRouter()
 
 
 @router.get("/")
-async def get_blogs():
+async def get_blogs(skip: int = 0, limit: int = 2):
     """
     Get all blogs.
     """
-    blogs = await BlogService.get_blogs()
+    blogs = await BlogService.get_blogs_paginated(skip, limit)
     return blogs
 
 
