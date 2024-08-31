@@ -2,13 +2,14 @@
 
 I made this project to get more comfortable with implementing core concepts such as middleware, jwt authentication, and database operations. Now a days, you can just use frameworks such as Django, Spring-boot, or Express to get a lot of these features out of the box. These frameworks are great and I use them all the time, but I wanted to understand how they work under the hood.
 
-With this project I aim to implement the following features:
+With this project I implemented the following features:
 
-- [ ] User Authentication
-- [ ] Blog CRUD operations
-- [ ] Comment CRUD operations
-- [ ] Various middleware operations
-- [ ] Unit tests (probably)
+- User Authentication
+- Blog CRUD operations
+- Comment CRUD operation - recursive like reddit
+- Various middleware operations
+
+Altho, this is just scratching surface but it gave me a little more insight.
 
 ## Installation
 
@@ -28,7 +29,7 @@ createdb fastapi_blogs_db
 4. Set the environment variables
 
 ```bash
-export DATABASE_URL=postgresql://postgres:password@localhost/fastapi_blogs_db
+cp ./env.example ./env # and fill the values
 ```
 
 5. Run the application
